@@ -18,14 +18,10 @@ from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
 )
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 # curl http://localhost:11434/api/chat -d '{"model": "llama3.1", "messages": [{ "role": "user", "content": "why is the sky blue?" }]}'
 st.set_page_config(page_title="Chatbot")
 # from langchain_openai import ChatOpenAI
-from langchain.chains import RetrievalQA
-from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint, HuggingFacePipeline
 # llm = ChatOpenAI(model="gpt-4o", temperature=0)
 # llm = HuggingFacePipeline.from_model_id(
 #     model_id="TheBloke/Llama-2-7b-Chat-AWQ",
