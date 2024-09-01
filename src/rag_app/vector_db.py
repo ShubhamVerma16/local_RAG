@@ -1,5 +1,6 @@
 import os
-from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_ollama import OllamaEmbeddings
 import chromadb
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
@@ -20,7 +21,10 @@ from chromadb.utils import embedding_functions
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 chroma_client = chromadb.PersistentClient(path="../data")
-embedding_function = HuggingFaceEmbeddings()
+# embedding_function = HuggingFaceEmbeddings()
+embedding_function = OllamaEmbeddings(
+    model="llama3.1"
+)
 
 # def initialize_vector_db(chroma_client, collection_name):
 #     if len(chroma_client.list_collections()) > 0 and collection_name in [

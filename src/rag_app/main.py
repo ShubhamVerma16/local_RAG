@@ -186,15 +186,15 @@ collection = load_local_db("test_collection")
 def get_response(query, chat_history):
 
     retriever = collection.as_retriever(
-    search_type="mmr", search_kwargs={"k": 3, "score_threshold": 0.5}
+    search_type="mmr", search_kwargs={"k": 5, "score_threshold": 0.5}
     )
 
     context = ""
     results = retriever.invoke(query)
     for res in results:
-        print("=================")
+        # print("=================")
 
-        print(res.page_content)
+        # print(res.page_content)
         context += res.page_content
     template = """
     You are a helpful assistant. Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
