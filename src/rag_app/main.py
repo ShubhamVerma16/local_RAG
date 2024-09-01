@@ -26,8 +26,6 @@ st.set_page_config(page_title="Chatbot")
 # from langchain_openai import ChatOpenAI
 from langchain.chains import RetrievalQA
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint, HuggingFacePipeline
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = ""
-os.environ["OPENAI_API_KEY"] = ""
 # llm = ChatOpenAI(model="gpt-4o", temperature=0)
 # llm = HuggingFacePipeline.from_model_id(
 #     model_id="TheBloke/Llama-2-7b-Chat-AWQ",
@@ -117,7 +115,7 @@ def upload_file(file: UploadFile = File(...), collection_name : Optional[str] = 
 
 @app.get("/query")
 def query(query : str, n_results : Optional[int] = 2, collection_name : Optional[str] = "test_collection"):
-    SYSTEM_MSG = "Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.\n\n"
+    SYSTEM_MSG = "Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. Alsways provide the answer in the saame language in which the question is asked.\n\n"
     
     # try:
     #     collection_list = read_file('COLLECTIONS.txt')
@@ -184,20 +182,33 @@ def query(query : str, n_results : Optional[int] = 2, collection_name : Optional
 
 
 collection = load_local_db("test_collection")
-retriever = collection.as_retriever(
-search_type="mmr", search_kwargs={"k": 1, "fetch_k": 1}
-)
 
 def get_response(query, chat_history):
 
+    retriever = collection.as_retriever(
+    search_type="mmr", search_kwargs={"k": 3, "score_threshold": 0.5}
+    )
+
+    context = ""
     results = retriever.invoke(query)
-    context = results[0].page_content
+    for res in results:
+        print("=================")
+
+        print(res.page_content)
+        context += res.page_content
     template = """
-    You are a helpful assistant. Answer the following questions considering the history of conversation. Use the context only if the query is relevant to the context else do not use the context to answer the query.
+    You are a helpful assistant. Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    Answer the question in the same language asked:
+    Q: what all is prohibited during the use of the car?
+    A: According to the provided text, the following are prohibited during the use of the car: Smoking (smoking) Eating and drinking inside the vehicle Additionally, private rides are generally not allowed, except in certain circumstances , such as when traveling between home and work to attend an out-of-town meeting.
+    Q: was ist bei der Nutzung des Autos alles verboten?
+    A: Gemäß dem bereitgestellten Text ist während der Nutzung des Autos Folgendes verboten:
+    Rauchen
+    Der Verzehr von Speisen und Getränken im Fahrzeug
+    Darüber hinaus sind private Fahrten grundsätzlich nicht gestattet, außer unter bestimmten Umständen, beispielsweise bei Fahrten zwischen Wohnung und Arbeit, um an einem auswärtigen Meeting teilzunehmen.
+
 
     context: {context}
-
-    Chat history: {chat_history}
 
     User question: {query}
 
@@ -207,10 +218,14 @@ def get_response(query, chat_history):
     llm = Ollama(model="llama3.1")
     chain = prompt | llm | StrOutputParser()
 
+    # return chain.stream({
+    #     "context": context,
+    #     "chat_history": chat_history,
+    #     "query": query
+    # })
     return chain.stream({
-        "context": context,
-        "chat_history": chat_history,
-        "query": query
+    "context": context,
+    "query": query
     })
 
 if "chat_history" not in st.session_state:

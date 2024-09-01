@@ -20,12 +20,18 @@ def load_split_html_file(html_file, text_splitter):
     return data
 
 def load_split_pdf_file(pdf_file, text_splitter):
-    loader = UnstructuredFileLoader(pdf_file)
+    loader = PyPDFLoader(pdf_file)
     documents = loader.load()
     text_splitter = CharacterTextSplitter(separator='/n',
                                           chunk_size = 1000,
                                             chunk_overlap=200)
     text_chunks = text_splitter.split_documents(documents)
+    
+
+    print("Pages in the original document: ", len(documents))
+    print("Length of chunks after splitting pages: ", len(text_chunks))
+    print("================")
+    print("lenght: ", len(text_chunks))
     return text_chunks
 
 
